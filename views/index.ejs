@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RabbitMQ Sender</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+        form { margin-bottom: 20px; }
+        input, textarea { display: block; width: 100%; margin: 10px 0; padding: 8px; }
+        ul { list-style: none; padding: 0; }
+        li { background: #fff; padding: 10px; margin-bottom: 5px; border-left: 4px solid #007BFF; }
+    </style>
+</head>
+<body>
+    <h1>Send Message to RabbitMQ</h1>
+    <form method="post" action="/publish">
+        <input type="text" name="rabbitmqUrl" placeholder="amqp://localhost" required />
+        <input type="text" name="queueName" placeholder="Queue Name" required />
+        <textarea name="message" placeholder="Your message..." required></textarea>
+        <button type="submit">Send</button>
+    </form>
+
+    <h2>Sent Messages</h2>
+    <ul>
+        <% messages.forEach(msg => { %>
+            <li>
+                <strong><%= msg.timestamp %></strong><br/>
+                Queue: <%= msg.queue %><br/>
+                Message: <%= msg.message %>
+            </li>
+        <% }) %>
+    </ul>
+</body>
+</html>
