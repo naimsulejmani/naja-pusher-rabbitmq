@@ -13,7 +13,7 @@
 <body>
     <h1>Send Message to RabbitMQ</h1>
     <form method="post" action="/publish">
-        <input type="text" name="rabbitmqUrl" placeholder="amqp://localhost" required />
+        <input type="text" name="rabbitmqUrl" placeholder="amqp://localhost" required  value="amqp://localhost" focus/>
         <input type="text" name="queueName" placeholder="Queue Name" required />
         <textarea name="message" placeholder="Your message..." required></textarea>
         <button type="submit">Send</button>
