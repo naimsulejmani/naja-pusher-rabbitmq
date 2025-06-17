@@ -22,16 +22,29 @@ app.get('/', (req, res) => {
 });
 
 app.post('/publish', async (req, res) => {
-    const { rabbitmqUrl, queueName, message } = req.body;
+    const { rabbitmqUrl, exchangeName, routingKey, queueName, message } = req.body;
 
     try {
         const connection = await amqplib.connect(rabbitmqUrl);
         const channel = await connection.createChannel();
-        await channel.assertQueue(queueName);
-        channel.sendToQueue(queueName, Buffer.from(message));
+          if (exchangeName) {
+            // Using exchange with routing key
+            await channel.assertExchange(exchangeName, 'topic');
+            if (queueName) {
+                await channel.assertQueue(queueName);
+                await channel.bindQueue(queueName, exchangeName, routingKey || '');
+            }
+            channel.publish(exchangeName, routingKey || '', Buffer.from(message));
+        } else {
+            // Direct queue (current behavior)
+            await channel.assertQueue(queueName);
+            channel.sendToQueue(queueName, Buffer.from(message));
+        }
 
         const entry = {
             timestamp: new Date().toISOString(),
+            exchange: exchangeName,
+            routingKey: routingKey,
             queue: queueName,
             message
         };
