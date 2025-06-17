@@ -11,23 +11,26 @@
     </style>
 </head>
 <body>
-    <h1>Send Message to RabbitMQ</h1>
-    <form method="post" action="/publish">
+    <h1>Send Message to RabbitMQ</h1>    <form method="post" action="/publish">
         <input type="text" name="rabbitmqUrl" placeholder="amqp://localhost" required  value="amqp://localhost" focus/>
+        <input type="text" name="exchangeName" placeholder="Exchange Name (optional)" />
+        <input type="text" name="routingKey" placeholder="Routing Key (optional)" />
         <input type="text" name="queueName" placeholder="Queue Name" required />
         <textarea name="message" placeholder="Your message..." required></textarea>
         <button type="submit">Send</button>
     </form>
 
     <h2>Sent Messages</h2>
-    <ul>
-        <% messages.forEach(msg => { %>
+    <ul>        <% messages.forEach(msg => { %>
             <li>
                 <strong><%= msg.timestamp %></strong><br/>
+                <% if (msg.exchange) { %>Exchange: <%= msg.exchange %><br/><% } %>
+                <% if (msg.routingKey) { %>Routing Key: <%= msg.routingKey %><br/><% } %>
                 Queue: <%= msg.queue %><br/>
                 Message: <%= msg.message %>
             </li>
-        <% }) %>
-    </ul>
+        <% }) %>    </ul>
+
+    <script src="/script.js"></script>
 </body>
 </html>
