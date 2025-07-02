@@ -7,17 +7,31 @@ const net = require('net'); // Add net module for TCP connections
 
 const app = express();
 const PORT = 3000;
-const messagesFile = path.join(__dirname, 'messages.json');
+
+// Function to get today's message file
+function getTodaysMessageFile() {
+    const today = new Date();
+    const dateStr = today.getFullYear().toString() + 
+                   (today.getMonth() + 1).toString().padStart(2, '0') + 
+                   today.getDate().toString().padStart(2, '0');
+    return path.join(__dirname, `messages_${dateStr}.json`);
+}
 
 // Setup
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
-// Ensure messages.json exists
-if (!fs.existsSync(messagesFile)) fs.writeFileSync(messagesFile, '[]');
+// Ensure today's messages file exists
+function ensureMessageFileExists(filePath) {
+    if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, '[]');
+    }
+}
 
 app.get('/', (req, res) => {
+    const messagesFile = getTodaysMessageFile();
+    ensureMessageFileExists(messagesFile);
     const messages = JSON.parse(fs.readFileSync(messagesFile));
     res.render('index', { messages });
 });
@@ -40,8 +54,9 @@ app.post('/publish', async (req, res) => {
             
             // Send message multiple times
             for (let i = 0; i < repeat; i++) {
-                const messageWithCounter = repeat > 1 ? `${message} [${i + 1}/${repeat}]` : message;
-                channel.publish(exchangeName, routingKey || '', Buffer.from(messageWithCounter));
+                // const messageWithCounter = repeat > 1 ? `${message} [${i + 1}/${repeat}]` : message;
+                // channel.publish(exchangeName, routingKey || '', Buffer.from(messageWithCounter));
+                channel.publish(exchangeName, routingKey || '', Buffer.from(message));
             }
         } else {
             // Direct queue (current behavior)
@@ -49,8 +64,9 @@ app.post('/publish', async (req, res) => {
             
             // Send message multiple times
             for (let i = 0; i < repeat; i++) {
-                const messageWithCounter = repeat > 1 ? `${message} [${i + 1}/${repeat}]` : message;
-                channel.sendToQueue(queueName, Buffer.from(messageWithCounter));
+                // const messageWithCounter = repeat > 1 ? `${message} [${i + 1}/${repeat}]` : message;
+                // channel.sendToQueue(queueName, Buffer.from(messageWithCounter));
+                channel.sendToQueue(queueName, Buffer.from(message));
             }
         }
 
@@ -64,6 +80,8 @@ app.post('/publish', async (req, res) => {
             repeatCount: repeat
         };
 
+        const messagesFile = getTodaysMessageFile();
+        ensureMessageFileExists(messagesFile);
         const messages = JSON.parse(fs.readFileSync(messagesFile));
         messages.unshift(entry);
         fs.writeFileSync(messagesFile, JSON.stringify(messages, null, 2));
@@ -128,6 +146,8 @@ app.post('/send-mirth', async (req, res) => {
                 controlId: parsedInfo.controlId
             };
 
+            const messagesFile = getTodaysMessageFile();
+            ensureMessageFileExists(messagesFile);
             const messages = JSON.parse(fs.readFileSync(messagesFile));
             messages.unshift(entry);
             fs.writeFileSync(messagesFile, JSON.stringify(messages, null, 2));
