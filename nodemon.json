@@ -1,0 +1,5 @@
+{
+  "ignore": ["messages_*.json", "*.json"],
+  "ext": "js,ejs",
+  "watch": ["app.js", "views/", "public/"]
+}
